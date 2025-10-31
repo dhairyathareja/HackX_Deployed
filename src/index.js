@@ -1,0 +1,53 @@
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv"
+import cors from "cors"
+import path from "path"
+import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
+
+
+dotenv.config();
+
+import authRouter from './routes/auth.router.js';
+import supplierRouter from "./routes/supplier.router.js";
+import userRouter from './routes/user.router.js';
+import { verifyJWT } from "./middleware/verifyJWT.js";
+
+
+const app = express();
+const PORT= process.env.PORT;
+
+// app.use(cors({
+//   origin: process.env.ORIGIN || 'http://localhost:3000',
+//   credentials: true
+// }));
+
+app.use(express.json());
+app.use(bodyParser.json({ limit: "5kb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "10kb" }));
+app.use(cookieParser());
+
+// build path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const buildPath = path.join(__dirname, '../public/build');
+app.use(express.static(buildPath));
+
+app.use('/auth', authRouter); 
+app.use('/supplier',verifyJWT,supplierRouter);
+app.use('/user',userRouter);
+
+// Fallback: React client-side routes
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+mongoose.connect(process.env.DB_URI).then(() => {
+  app.listen(PORT,()=>{
+    console.log("Server Started");
+  });
+}).catch(err => {
+  console.error('Database connection failed:', err);
+});
