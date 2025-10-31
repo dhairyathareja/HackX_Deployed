@@ -84,9 +84,9 @@ export const updateDetail = ErrorWrapper(async(req,res,next)=>{
 
 export const addProduct = ErrorWrapper(async(req,res,next)=>{
 
-    const {name,category,stock,supllierId} = req.body;
+    const {name,category,stock,supplierId} = req.body;
     
-    if(!name || !category || !stock || !supllierId){
+    if(!name || !category || !stock || !supplierId){
         throw new ErrorHandler(401,`Please Enter the details....`);
     }
     
@@ -98,7 +98,7 @@ export const addProduct = ErrorWrapper(async(req,res,next)=>{
             stock:stock
         }
 
-        const supplier=await Supplier.findOne({_id:supllierId});
+        const supplier=await Supplier.findOne({_id:supplierId});
         supplier.products.unshift(newProduct);
         supplier.save();
 
